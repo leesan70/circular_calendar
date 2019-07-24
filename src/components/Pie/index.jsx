@@ -53,6 +53,9 @@ export default class Pie extends Component {
       date,
     } = this.props;
     const angles = getAnglesFromTodo(displayData[index], is12HrMode, showAM, date);
+    if (angles === null) {
+      return null;
+    }
     const shouldHighlight = highlightedIndex === index;
     return this.createPiePieceFromAngles(angles.startAngle, angles.endAngle, shouldHighlight);
   }

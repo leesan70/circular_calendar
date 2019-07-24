@@ -71,9 +71,50 @@ export default class ScheduleScreen extends Component {
   }
 
   prepareDisplayData() {
-    const { data } = this.state;
-    const displayData = data.slice();
+    const { data, date } = this.state;
+    const displayData = [];
     // TODO: DO WORK HERE
+    const startOfDay = date.clone().startOf('day');
+    const endOfDay = date.clone().endOf('day');
+    // Empty data means free time all day
+    if (!data || !data.length) {
+      // TODO: Discard title, content, done for free times.
+      return [{
+        startDate: startOfDay,
+        endDate: endOfDay,
+        title: 'Placeholder',
+        content: 'Placeholder',
+        done: false,
+      }];
+    }
+    let lastFreeTimeStart = startOfDay.clone();
+    for (let i = 0; i < data.length; i += 1) {
+      // Add free time before this todo, if
+      // 1) this todo started after startOfDay
+      // 2) the previous todo didn't end at this todo's startDate
+      if (data[i].startDate.isAfter(startOfDay) && lastFreeTimeStart.isBefore(data[i].startDate)) {
+        displayData.push({
+          startDate: lastFreeTimeStart,
+          endDate: data[i].startDate,
+          title: 'Placeholder',
+          content: 'Placeholder',
+          done: false,
+        });
+      }
+      // Add this todo
+      displayData.push(data[i]);
+      lastFreeTimeStart = data[i].endDate;
+    }
+    // Add free time ending at the endOfDay, if appropriate.
+    if (lastFreeTimeStart.isBefore(endOfDay)) {
+      displayData.push({
+        startDate: lastFreeTimeStart,
+        endDate: endOfDay,
+        title: 'Placeholder',
+        content: 'Placeholder',
+        done: false,
+      });
+    }
     return displayData;
   }
 

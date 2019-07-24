@@ -1,5 +1,7 @@
 export function isValidAngles(startAngle, endAngle) {
-  return startAngle >= 0 && startAngle < 2 * Math.PI && endAngle > 0 && endAngle <= 2 * Math.PI;
+  return startAngle < endAngle
+    && startAngle >= 0 && startAngle < 2 * Math.PI
+    && endAngle > 0 && endAngle <= 2 * Math.PI;
 }
 
 export function getAnglesFromDates(startDate, endDate, is12HrMode, showAM, refDate) {
