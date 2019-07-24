@@ -19,6 +19,7 @@ import PropTypes from 'prop-types';
 import * as scale from 'd3-scale';
 import * as shape from 'd3-shape';
 import moment from 'moment';
+import { isValidAngles, getAnglesFromDates, getAnglesFromTodo } from '../../services/angle';
 import Theme from '../../theme';
 
 const d3 = { scale, shape };
@@ -42,36 +43,26 @@ function getColor(index) {
   return Theme.colors[index];
 }
 
-function isValidAngles(startAngle, endAngle) {
-  return startAngle >= 0 && startAngle < 2 * Math.PI && endAngle > 0 && endAngle <= 2 * Math.PI;
-}
-
 export default class Pie extends Component {
-  todoToAngles(todo) {
-    const { is12HrMode, showAM, date } = this.props;
-    const { startDate, endDate } = todo;
-
-    const startOfDay = date.clone().startOf('day');
-    const noon = startOfDay.clone().add(12, 'hours');
-    const endOfDay = date.clone().endOf('day');
-    const refDateStart = is12HrMode && !showAM ? noon : startOfDay;
-    const refDateEnd = is12HrMode && showAM ? noon : endOfDay;
-    const adjStartDate = startDate.isBefore(refDateStart) ? refDateStart : startDate;
-    const adjEndDate = endDate.isAfter(refDateEnd) ? refDateEnd : endDate;
-
-    const startTimestamp = refDateStart.valueOf();
-    const endTimestamp = refDateEnd.valueOf();
-    const totalMilliseconds = endTimestamp - startTimestamp;
-
-    const startAngle = 2 * Math.PI * (adjStartDate.valueOf() - startTimestamp) / totalMilliseconds;
-    const endAngle = 2 * Math.PI * (adjEndDate.valueOf() - startTimestamp) / totalMilliseconds;
-
-    return isValidAngles(startAngle, endAngle) ? { startAngle, endAngle } : null;
+  createPiePieceFromIndex(index) {
+    const {
+      displayData,
+      highlightedIndex,
+      is12HrMode,
+      showAM,
+      date,
+    } = this.props;
+    const angles = getAnglesFromTodo(displayData[index], is12HrMode, showAM, date);
+    const shouldHighlight = highlightedIndex === index;
+    return this.createPiePieceFromAngles(angles.startAngle, angles.endAngle, shouldHighlight);
   }
 
-  createPiePiece(index) {
-    const { data, pieWidth, highlightedIndex } = this.props;
-
+  createPiePieceFromAngles(startAngle, endAngle, shouldHighlight) {
+    const { pieWidth } = this.props;
+    if (startAngle === null || endAngle === null) {
+      return null;
+    }
+    const angles = { startAngle, endAngle };
     const highlightedArc = d3.shape.arc()
       .outerRadius(pieWidth / 2 + 10)
       .padAngle(0.05)
@@ -80,27 +71,22 @@ export default class Pie extends Component {
       .outerRadius(pieWidth / 2)
       .padAngle(0.05)
       .innerRadius(30);
-
-    const arcData = this.todoToAngles(data[index]);
-    if (arcData === null) {
-      return null;
-    }
-    return highlightedIndex === index ? highlightedArc(arcData) : unselectedArc(arcData);
+    return shouldHighlight ? highlightedArc(angles) : unselectedArc(angles);
   }
 
   render() {
     const {
       width,
       height,
-      data,
+      displayData,
       onPieItemPress,
       onPieItemLongPress,
     } = this.props;
     // const margin = styles.container.margin;
     const x = width / 2;
     const y = height / 2;
-    const pie = data.map((item, index) => {
-      const piePiece = this.createPiePiece(index);
+    const pie = displayData.map((item, index) => {
+      const piePiece = this.createPiePieceFromIndex(index);
       const color = getColor(index);
       return piePiece === null ? null : (
         <Path
@@ -134,7 +120,7 @@ const pieData = PropTypes.shape({
 });
 
 Pie.propTypes = {
-  data: PropTypes.arrayOf(pieData),
+  displayData: PropTypes.arrayOf(pieData),
   pieWidth: PropTypes.number.isRequired,
   width: PropTypes.number.isRequired,
   height: PropTypes.number.isRequired,
@@ -147,5 +133,5 @@ Pie.propTypes = {
 };
 
 Pie.defaultProps = {
-  data: {},
+  displayData: [],
 };

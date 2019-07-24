@@ -9,7 +9,7 @@ import {
 import moment from 'moment';
 import Pie from '../components/Pie';
 import Theme from '../theme';
-import data from '../../resources/data';
+import importedData from '../../resources/data';
 
 const styles = StyleSheet.create({
   container: {
@@ -41,31 +41,40 @@ const styles = StyleSheet.create({
   },
 });
 
+function getData(date) {
+  return importedData.todoItemList;
+}
+
 export default class ScheduleScreen extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      data: getData(),
       highlightedIndex: 0,
-      data: [],
       date: moment(),
-      is12HrMode: false,
-      showAM: true,
+      is12HrMode: true,
+      showAM: false,
     };
     this.onPieItemPress = this.onPieItemPress.bind(this);
     this.onPieItemLongPress = this.onPieItemLongPress.bind(this);
+    this.prepareDisplayData = this.prepareDisplayData.bind(this);
   }
 
   onPieItemPress(index) {
-    this.setState((state, props) => (
-      {
-        ...state,
-        highlightedIndex: index,
-      }
-    ));
+    this.setState({
+      highlightedIndex: index,
+    });
   }
 
   onPieItemLongPress(index) {
     this.onPieItemPress(index);
+  }
+
+  prepareDisplayData() {
+    const { data } = this.state;
+    const displayData = data.slice();
+    // TODO: DO WORK HERE
+    return displayData;
   }
 
   render() {
@@ -77,8 +86,9 @@ export default class ScheduleScreen extends Component {
       showAM,
       date,
     } = this.state;
+    const displayData = this.prepareDisplayData();
+    const displayItem = displayData[highlightedIndex];
     const dateString = date.format('MMM Do YYYY');
-    const displayItem = data.todoItemList[highlightedIndex];
 
     return (
       <ScrollView>
@@ -92,7 +102,7 @@ export default class ScheduleScreen extends Component {
             colors={Theme.colors}
             width={width}
             height={height}
-            data={data.todoItemList}
+            displayData={displayData}
             highlightedIndex={highlightedIndex}
             is12HrMode={is12HrMode}
             showAM={showAM}
