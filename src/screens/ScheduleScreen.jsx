@@ -1,11 +1,13 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import {
   StyleSheet,
   Text,
   ScrollView,
   Dimensions,
   View,
+  TouchableOpacity,
 } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import moment from 'moment';
 import Pie from '../components/Pie';
 import Theme from '../theme';
@@ -38,6 +40,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     color: 'grey',
     fontWeight: 'bold',
+  },
+  floating_button: {
+    position: 'absolute',
+    width: 70,
+    height: 70,
+    alignItems: 'center',
+    justifyContent: 'center',
+    right: 10,
+    bottom: 10,
   },
 });
 
@@ -132,37 +143,42 @@ export default class ScheduleScreen extends Component {
     const dateString = date.format('MMM Do YYYY');
 
     return (
-      <ScrollView>
-        <View style={styles.container}>
-          <Text style={styles.chart_title}>{dateString}</Text>
-          <Pie
-            pieWidth={150}
-            pieHeight={150}
-            onPieItemPress={this.onPieItemPress}
-            onPieItemLongPress={this.onPieItemPress}
-            colors={Theme.colors}
-            width={width}
-            height={height}
-            displayData={displayData}
-            highlightedIndex={highlightedIndex}
-            is12HrMode={is12HrMode}
-            showAM={showAM}
-            date={date}
-          />
-          <Text style={styles.chart_title}>
-            {displayItem.title}
-          </Text>
-          <Text>
-            {displayItem.content}
-          </Text>
-          <Text>
-            {`Start Date: ${displayItem.startDate.format('h:mm a (MMMM Do)')}`}
-          </Text>
-          <Text>
-            {`End Date: ${displayItem.endDate.format('h:mm a (MMMM Do)')}`}
-          </Text>
-        </View>
-      </ScrollView>
+      <Fragment>
+        <ScrollView>
+          <View style={styles.container}>
+            <Text style={styles.chart_title}>{dateString}</Text>
+            <Pie
+              pieWidth={150}
+              pieHeight={150}
+              onPieItemPress={this.onPieItemPress}
+              onPieItemLongPress={this.onPieItemPress}
+              colors={Theme.colors}
+              width={width}
+              height={height}
+              displayData={displayData}
+              highlightedIndex={highlightedIndex}
+              is12HrMode={is12HrMode}
+              showAM={showAM}
+              date={date}
+            />
+            <Text style={styles.chart_title}>
+              {displayItem.title}
+            </Text>
+            <Text>
+              {displayItem.content}
+            </Text>
+            <Text>
+              {`Start Date: ${displayItem.startDate.format('h:mm a (MMMM Do)')}`}
+            </Text>
+            <Text>
+              {`End Date: ${displayItem.endDate.format('h:mm a (MMMM Do)')}`}
+            </Text>
+          </View>
+        </ScrollView>
+        <TouchableOpacity style={styles.floating_button}>
+          <Icon name="plus-circle" size={70} color="#694fad" resizeMode="contain" />
+        </TouchableOpacity>
+      </Fragment>
     );
   }
 }
