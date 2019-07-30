@@ -4,6 +4,22 @@ export function isValidAngles(startAngle, endAngle) {
     && endAngle > 0 && endAngle <= 2 * Math.PI;
 }
 
+export function getHandleAngle(date, is12HrMode, showAM) {
+  const startOfDay = date.clone().startOf('day');
+  const noon = startOfDay.clone().add(12, 'hours');
+  const endOfDay = date.clone().endOf('day');
+  const refDateStart = is12HrMode && !showAM ? noon : startOfDay;
+  const refDateEnd = is12HrMode && showAM ? noon : endOfDay;
+  const adjDate = date.isBefore(refDateStart) ? refDateStart : date;
+
+  const startTimestamp = refDateStart.valueOf();
+  const endTimestamp = refDateEnd.valueOf();
+  const totalMilliseconds = endTimestamp - startTimestamp;
+
+  const angle = 360 * (adjDate.valueOf() - startTimestamp) / totalMilliseconds;
+  return angle;
+}
+
 export function getAnglesFromDates(startDate, endDate, is12HrMode, showAM, refDate) {
   const startOfDay = refDate.clone().startOf('day');
   const noon = startOfDay.clone().add(12, 'hours');

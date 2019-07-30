@@ -13,13 +13,14 @@ import {
   Svg,
   G,
   Path,
+  Line,
 } from 'react-native-svg';
 import PropTypes from 'prop-types';
 
 import * as scale from 'd3-scale';
 import * as shape from 'd3-shape';
 import moment from 'moment';
-import { isValidAngles, getAnglesFromDates, getAnglesFromTodo } from '../../services/angle';
+import { getHandleAngle, getAnglesFromTodo } from '../../services/angle';
 import Theme from '../../theme';
 
 const d3 = { scale, shape };
@@ -79,6 +80,9 @@ export default class Pie extends Component {
 
   render() {
     const {
+      date,
+      is12HrMode,
+      showAM,
       width,
       height,
       pieWidth,
@@ -103,6 +107,7 @@ export default class Pie extends Component {
         />
       );
     }).filter(item => item !== null);
+    const rotation = getHandleAngle(date, is12HrMode, showAM);
 
     return (
       <TouchableWithoutFeedback onPress={onBackgroundPress}>
@@ -111,6 +116,16 @@ export default class Pie extends Component {
             <G translateX={x} translateY={y}>
               {pie}
             </G>
+            <Line 
+              x1={x}
+              y1={y}
+              x2={x}
+              y2={y - pieWidth / 3}
+              stroke="red"
+              strokeWidth="2"
+              origin={`${x}, ${y}`}
+              rotation={rotation}
+            />
           </Svg>
         </View>
       </TouchableWithoutFeedback>

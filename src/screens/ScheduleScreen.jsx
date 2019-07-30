@@ -64,13 +64,30 @@ export default class ScheduleScreen extends Component {
       data: getData(),
       highlightedIndex: -1,
       date: moment(),
-      is12HrMode: true,
+      is12HrMode: false,
       showAM: false,
     };
     this.onPieItemPress = this.onPieItemPress.bind(this);
     this.onPieItemLongPress = this.onPieItemLongPress.bind(this);
     this.onBackgroundPress = this.onBackgroundPress.bind(this);
     this.prepareDisplayData = this.prepareDisplayData.bind(this);
+    this.tick = this.tick.bind(this);
+  }
+
+  componentDidMount() {
+    this.intervalID = setInterval(
+      () => this.tick(),
+      1000
+    );
+  }
+  componentWillUnmount() {
+    clearInterval(this.intervalID);
+  }
+
+  tick() {
+    this.setState({
+      time: moment()
+    });
   }
 
   onPieItemPress(index) {
