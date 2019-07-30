@@ -2,6 +2,7 @@ import React, { Component, Fragment } from 'react';
 import {
   StyleSheet,
   Text,
+  SafeAreaView,
   ScrollView,
   Dimensions,
   View,
@@ -138,6 +139,7 @@ export default class ScheduleScreen extends Component {
       showAM,
       date,
     } = this.state;
+    const { navigation } = this.props;
     const displayData = this.prepareDisplayData();
     const displayItem = displayData[highlightedIndex];
     const dateString = date.format('MMM Do YYYY');
@@ -176,7 +178,22 @@ export default class ScheduleScreen extends Component {
           </View>
         </ScrollView>
         <TouchableOpacity style={styles.floating_button}>
-          <Icon name="plus-circle" size={70} color="#694fad" resizeMode="contain" />
+          <Icon
+            name="plus-circle"
+            size={70}
+            color="#694fad"
+            resizeMode="contain"
+            onPress={() => navigation.navigate('MyModal', {
+              addTodo: (todoItem) => {
+                const { data } = this.state;
+                const newData = data.slice();
+                newData.push(todoItem);
+                this.setState({
+                  data: newData
+                });
+              },
+            })}
+          />
         </TouchableOpacity>
       </Fragment>
     );
