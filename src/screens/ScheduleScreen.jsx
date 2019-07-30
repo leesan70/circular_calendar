@@ -62,13 +62,14 @@ export default class ScheduleScreen extends Component {
     super(props);
     this.state = {
       data: getData(),
-      highlightedIndex: 0,
+      highlightedIndex: -1,
       date: moment(),
       is12HrMode: true,
       showAM: false,
     };
     this.onPieItemPress = this.onPieItemPress.bind(this);
     this.onPieItemLongPress = this.onPieItemLongPress.bind(this);
+    this.onBackgroundPress = this.onBackgroundPress.bind(this);
     this.prepareDisplayData = this.prepareDisplayData.bind(this);
   }
 
@@ -82,10 +83,15 @@ export default class ScheduleScreen extends Component {
     this.onPieItemPress(index);
   }
 
+  onBackgroundPress() {
+    this.setState({
+      highlightedIndex: -1,
+    });
+  }
+
   prepareDisplayData() {
     const { data, date } = this.state;
     const displayData = [];
-    // TODO: DO WORK HERE
     const startOfDay = date.clone().startOf('day');
     const endOfDay = date.clone().endOf('day');
     // Empty data means free time all day
@@ -154,6 +160,7 @@ export default class ScheduleScreen extends Component {
               pieHeight={150}
               onPieItemPress={this.onPieItemPress}
               onPieItemLongPress={this.onPieItemPress}
+              onBackgroundPress={this.onBackgroundPress}
               colors={Theme.colors}
               width={width}
               height={height}
@@ -164,16 +171,16 @@ export default class ScheduleScreen extends Component {
               date={date}
             />
             <Text style={styles.chart_title}>
-              {displayItem.title}
+              {displayItem && displayItem.title}
             </Text>
             <Text>
-              {displayItem.content}
+              {displayItem && displayItem.content}
             </Text>
             <Text>
-              {`Start Date: ${displayItem.startDate.format('h:mm a (MMMM Do)')}`}
+              {displayItem && `Start Date: ${displayItem.startDate.format('h:mm a (MMMM Do)')}`}
             </Text>
             <Text>
-              {`End Date: ${displayItem.endDate.format('h:mm a (MMMM Do)')}`}
+              {displayItem && `End Date: ${displayItem.endDate.format('h:mm a (MMMM Do)')}`}
             </Text>
           </View>
         </ScrollView>

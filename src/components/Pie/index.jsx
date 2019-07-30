@@ -81,9 +81,11 @@ export default class Pie extends Component {
     const {
       width,
       height,
+      pieWidth,
       displayData,
       onPieItemPress,
       onPieItemLongPress,
+      onBackgroundPress,
     } = this.props;
     // const margin = styles.container.margin;
     const x = width / 2;
@@ -103,13 +105,15 @@ export default class Pie extends Component {
     }).filter(item => item !== null);
 
     return (
-      <View width={width} height={height} style={styles.pie}>
-        <Svg width={width} height={height}>
-          <G translateX={x} translateY={y}>
-            {pie}
-          </G>
-        </Svg>
-      </View>
+      <TouchableWithoutFeedback onPress={onBackgroundPress}>
+        <View width={width} height={height} style={styles.pie}>
+          <Svg width={width} height={height}>
+            <G translateX={x} translateY={y}>
+              {pie}
+            </G>
+          </Svg>
+        </View>
+      </TouchableWithoutFeedback>
     );
   }
 }
@@ -130,6 +134,7 @@ Pie.propTypes = {
   highlightedIndex: PropTypes.number.isRequired,
   onPieItemPress: PropTypes.func.isRequired,
   onPieItemLongPress: PropTypes.func.isRequired,
+  onBackgroundPress: PropTypes.func.isRequired,
   is12HrMode: PropTypes.bool.isRequired,
   showAM: PropTypes.bool.isRequired,
   date: PropTypes.instanceOf(moment).isRequired,
