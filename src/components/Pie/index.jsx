@@ -2,12 +2,14 @@
 import React, { Component } from 'react';
 import {
   StyleSheet,
+  Button,
   Text,
   View,
   ART,
   LayoutAnimation,
   Dimensions,
   TouchableWithoutFeedback,
+  TouchableOpacity,
 } from 'react-native';
 import {
   Svg,
@@ -15,6 +17,7 @@ import {
   Path,
   Line,
 } from 'react-native-svg';
+import { ButtonGroup } from 'react-native-elements';
 import PropTypes from 'prop-types';
 
 import * as scale from 'd3-scale';
@@ -45,6 +48,12 @@ function getColor(index) {
 }
 
 export default class Pie extends Component {
+  constructor() {
+    super();
+    this.createPiePieceFromIndex = this.createPiePieceFromIndex.bind(this);
+    this.createPiePieceFromAngles = this.createPiePieceFromAngles.bind(this);
+  }
+
   createPiePieceFromIndex(index) {
     const {
       displayData,
@@ -90,6 +99,8 @@ export default class Pie extends Component {
       onPieItemPress,
       onPieItemLongPress,
       onBackgroundPress,
+      onHrModePress,
+      onAMPMPress,
     } = this.props;
     // const margin = styles.container.margin;
     const x = width / 2;
@@ -109,9 +120,27 @@ export default class Pie extends Component {
     }).filter(item => item !== null);
     const rotation = getHandleAngle(date, is12HrMode, showAM);
 
+    const hrModeButtons = ["12 Hr", "24 Hr"];
+    const AMPMButtons = ["AM", "PM"];
+
     return (
       <TouchableWithoutFeedback onPress={onBackgroundPress}>
-        <View width={width} height={height} style={styles.pie}>
+        <View width={width} style={styles.pie}>
+          <ButtonGroup
+            buttons={hrModeButtons}
+            selectedIndex={is12HrMode ? 0 : 1}
+            onPress={onHrModePress}
+            selectedButtonStyle={{ backgroundColor: '#694fad'}}
+          />
+          { 
+            is12HrMode && 
+              <ButtonGroup
+                buttons={AMPMButtons}
+                selectedIndex={showAM ? 0 : 1}
+                onPress={onAMPMPress}
+                selectedButtonStyle={{ backgroundColor: '#694fad'}}
+              />
+          }
           <Svg width={width} height={height}>
             <G translateX={x} translateY={y}>
               {pie}
@@ -121,9 +150,10 @@ export default class Pie extends Component {
               y1={y}
               x2={x}
               y2={y - pieWidth / 3}
+              originX={x}
+              originY={y}
               stroke="red"
               strokeWidth="2"
-              origin={`${x}, ${y}`}
               rotation={rotation}
             />
           </Svg>
@@ -137,8 +167,8 @@ const pieData = PropTypes.shape({
   startDate: PropTypes.instanceOf(moment).isRequired,
   endDate: PropTypes.instanceOf(moment).isRequired,
   title: PropTypes.string,
-  content: PropTypes.string.isRequired,
-  done: PropTypes.bool.isRequired,
+  content: PropTypes.string,
+  done: PropTypes.bool,
 });
 
 Pie.propTypes = {
@@ -150,6 +180,8 @@ Pie.propTypes = {
   onPieItemPress: PropTypes.func.isRequired,
   onPieItemLongPress: PropTypes.func.isRequired,
   onBackgroundPress: PropTypes.func.isRequired,
+  onHrModePress: PropTypes.func.isRequired,
+  onAMPMPress: PropTypes.func.isRequired,
   is12HrMode: PropTypes.bool.isRequired,
   showAM: PropTypes.bool.isRequired,
   date: PropTypes.instanceOf(moment).isRequired,

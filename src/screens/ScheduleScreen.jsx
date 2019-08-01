@@ -3,10 +3,12 @@ import {
   StyleSheet,
   Text,
   SafeAreaView,
+  FlatList,
   ScrollView,
   Dimensions,
   View,
   TouchableOpacity,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import moment from 'moment';
@@ -70,6 +72,8 @@ export default class ScheduleScreen extends Component {
     this.onPieItemPress = this.onPieItemPress.bind(this);
     this.onPieItemLongPress = this.onPieItemLongPress.bind(this);
     this.onBackgroundPress = this.onBackgroundPress.bind(this);
+    this.onHrModePress = this.onHrModePress.bind(this);
+    this.onAMPMPress = this.onAMPMPress.bind(this);
     this.prepareDisplayData = this.prepareDisplayData.bind(this);
     this.tick = this.tick.bind(this);
   }
@@ -86,7 +90,7 @@ export default class ScheduleScreen extends Component {
 
   tick() {
     this.setState({
-      time: moment()
+      date: moment(),
     });
   }
 
@@ -106,6 +110,20 @@ export default class ScheduleScreen extends Component {
     });
   }
 
+  onHrModePress(hrModeIndex) {
+    const is12HrMode = hrModeIndex === 0;
+    this.setState({
+      is12HrMode,
+    });
+  }
+
+  onAMPMPress(AMPMIndex) {
+    const showAM = AMPMIndex === 0;
+    this.setState({
+      showAM,
+    });
+  }
+
   prepareDisplayData() {
     const { data, date } = this.state;
     const displayData = [];
@@ -113,13 +131,9 @@ export default class ScheduleScreen extends Component {
     const endOfDay = date.clone().endOf('day');
     // Empty data means free time all day
     if (!data || !data.length) {
-      // TODO: Discard title, content, done for free times.
       return [{
         startDate: startOfDay,
         endDate: endOfDay,
-        title: 'Placeholder',
-        content: 'Placeholder',
-        done: false,
       }];
     }
     let lastFreeTimeStart = startOfDay.clone();
@@ -131,9 +145,6 @@ export default class ScheduleScreen extends Component {
         displayData.push({
           startDate: lastFreeTimeStart,
           endDate: data[i].startDate,
-          title: 'Placeholder',
-          content: 'Placeholder',
-          done: false,
         });
       }
       // Add this todo
@@ -145,9 +156,6 @@ export default class ScheduleScreen extends Component {
       displayData.push({
         startDate: lastFreeTimeStart,
         endDate: endOfDay,
-        title: 'Placeholder',
-        content: 'Placeholder',
-        done: false,
       });
     }
     return displayData;
@@ -178,6 +186,8 @@ export default class ScheduleScreen extends Component {
               onPieItemPress={this.onPieItemPress}
               onPieItemLongPress={this.onPieItemPress}
               onBackgroundPress={this.onBackgroundPress}
+              onHrModePress={this.onHrModePress}
+              onAMPMPress={this.onAMPMPress}
               colors={Theme.colors}
               width={width}
               height={height}
@@ -190,15 +200,17 @@ export default class ScheduleScreen extends Component {
             <Text style={styles.chart_title}>
               {displayItem && displayItem.title}
             </Text>
-            <Text>
-              {displayItem && displayItem.content}
-            </Text>
-            <Text>
-              {displayItem && `Start Date: ${displayItem.startDate.format('h:mm a (MMMM Do)')}`}
-            </Text>
-            <Text>
-              {displayItem && `End Date: ${displayItem.endDate.format('h:mm a (MMMM Do)')}`}
-            </Text>
+            <ScrollView>
+              <Text>
+                {displayItem && displayItem.content}
+              </Text>
+              <Text>
+                {displayItem && `Start Date: ${displayItem.startDate.format('h:mm a (MMMM Do)')}`}
+              </Text>
+              <Text>
+                {displayItem && `End Date: ${displayItem.endDate.format('h:mm a (MMMM Do)')}`}
+              </Text>
+            </ScrollView>
           </View>
         </ScrollView>
         <TouchableOpacity style={styles.floating_button}>
