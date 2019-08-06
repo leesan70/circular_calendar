@@ -65,10 +65,10 @@ export default class Pie extends Component {
   }
 
   getPointsAroundClock() {
-    const { is12HrMode, pieWidth, selectedIndex } = this.props;
+    const { is12HrMode, pieWidth } = this.props;
     const totalNumPoints = is12HrMode ? 12 : 24;
     const constantMultiplier = is12HrMode ? 1/6 : 1/12;
-    const margin = selectedIndex < 0 ? 15 : 25;
+    const margin = 25;
     return [...Array(totalNumPoints).keys()].
       map(n => n * constantMultiplier * Math.PI).
       map(angle => pointRadial(angle, pieWidth / 2 + margin)).
@@ -80,7 +80,7 @@ export default class Pie extends Component {
     if (is12HrMode) {
       return hour == 0 ? 12 : hour;
     }
-    return hour % 2 === 0 ? hour : "."
+    return hour % 6 === 0 ? hour : "."
   }
 
   createPiePieceFromIndex(index) {
