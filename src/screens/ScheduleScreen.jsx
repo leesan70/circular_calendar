@@ -7,6 +7,7 @@ import {
   Dimensions,
   View,
   TouchableOpacity,
+  StatusBar,
 } from 'react-native';
 import {
   Avatar,
@@ -33,18 +34,6 @@ const styles = StyleSheet.create({
   },
   card: {
     margin: 4,
-  },
-  chart: {
-    flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'column',
-  },
-  chart_title: {
-    padding: 5,
-    textAlign: 'center',
-    fontSize: 18,
-    backgroundColor: 'white',
-    fontWeight: 'bold',
   },
   floating_button: {
     position: 'absolute',
@@ -206,6 +195,7 @@ export default class ScheduleScreen extends Component {
             onPress: () => this.refs.scrollView.scrollTo({x: 0, y: 0, animated: true})
           }}
           backgroundColor='white'
+          containerStyle={{ marginTop: ((StatusBar.currentHeight || 0) * -1) }}
         />
         <SafeAreaView style={{flex: 1}}>
           <ScrollView 
@@ -214,7 +204,6 @@ export default class ScheduleScreen extends Component {
             ref="scrollView"
           >
             <View style={styles.container}>
-              {/* <Text style={styles.chart_title}>{dateString}</Text> */}
               <Pie
                 pieWidth={150}
                 pieHeight={150}
