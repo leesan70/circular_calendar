@@ -6,8 +6,8 @@ import ScheduleScreen from './src/screens/ScheduleScreen';
 import CalendarScreen from './src/screens/CalendarScreen';
 import ModalScreen from './src/screens/ModalScreen';
 
-// Temporary ignore due to dependencies using componentWillReceiveProps
-YellowBox.ignoreWarnings(['Warning: componentWillReceiveProps']);
+// Temporary ignore due to dependencies using componentWillReceiveProps, ViewPagerAndroid
+YellowBox.ignoreWarnings(['Warning: componentWillReceiveProps', 'Warning: ViewPagerAndroid']);
 
 const AppNavigator = createMaterialTopTabNavigator({
   Schedule: {
