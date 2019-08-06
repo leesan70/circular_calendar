@@ -2,13 +2,10 @@ import React, { Component, Fragment } from 'react';
 import {
   StyleSheet,
   Text,
-  SafeAreaView,
-  FlatList,
   ScrollView,
   Dimensions,
   View,
   TouchableOpacity,
-  TouchableWithoutFeedback,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import moment from 'moment';
@@ -55,6 +52,8 @@ const styles = StyleSheet.create({
   },
 });
 
+const height = 220;
+
 function getData(date) {
   return importedData.todoItemList;
 }
@@ -64,7 +63,7 @@ export default class ScheduleScreen extends Component {
     super(props);
     this.state = {
       data: getData(),
-      highlightedIndex: -1,
+      selectedIndex: -1,
       date: moment(),
       is12HrMode: false,
       showAM: false,
@@ -96,7 +95,7 @@ export default class ScheduleScreen extends Component {
 
   onPieItemPress(index) {
     this.setState({
-      highlightedIndex: index,
+      selectedIndex: index,
     });
   }
 
@@ -106,7 +105,7 @@ export default class ScheduleScreen extends Component {
 
   onBackgroundPress() {
     this.setState({
-      highlightedIndex: -1,
+      selectedIndex: -1,
     });
   }
 
@@ -162,17 +161,16 @@ export default class ScheduleScreen extends Component {
   }
 
   render() {
-    const height = 200;
     const { width } = Dimensions.get('window');
     const {
-      highlightedIndex,
+      selectedIndex,
       is12HrMode,
       showAM,
       date,
     } = this.state;
     const { navigation } = this.props;
     const displayData = this.prepareDisplayData();
-    const displayItem = displayData[highlightedIndex];
+    const displayItem = displayData[selectedIndex];
     const dateString = date.format('MMM Do YYYY');
 
     return (
@@ -192,7 +190,7 @@ export default class ScheduleScreen extends Component {
               width={width}
               height={height}
               displayData={displayData}
-              highlightedIndex={highlightedIndex}
+              selectedIndex={selectedIndex}
               is12HrMode={is12HrMode}
               showAM={showAM}
               date={date}

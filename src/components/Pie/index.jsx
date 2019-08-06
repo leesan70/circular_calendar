@@ -2,31 +2,25 @@
 import React, { Component } from 'react';
 import {
   StyleSheet,
-  Button,
-  Text,
   View,
-  ART,
-  LayoutAnimation,
-  Dimensions,
   TouchableWithoutFeedback,
-  TouchableOpacity,
 } from 'react-native';
 import {
   Svg,
   G,
   Path,
   Line,
+  Text,
 } from 'react-native-svg';
 import { ButtonGroup } from 'react-native-elements';
 import PropTypes from 'prop-types';
 
-import * as scale from 'd3-scale';
 import * as shape from 'd3-shape';
+import { pointRadial } from 'd3';
 import moment from 'moment';
-import { getHandleAngle, getAnglesFromTodo } from '../../services/angle';
-import Theme from '../../theme';
 
-const d3 = { scale, shape };
+import { getHandleAngle, getAnglesFromTodo, } from '../../services/angle';
+import Theme from '../../theme';
 
 const styles = StyleSheet.create({
   container: {
@@ -43,8 +37,14 @@ const styles = StyleSheet.create({
   },
 });
 
+const selectedAdditionalWidth = 10;
+
 function getColor(index) {
   return Theme.colors[index];
+}
+
+function getKey(todoItem) {
+  return todoItem.startDate.unix();
 }
 
 export default class Pie extends Component {
@@ -52,12 +52,41 @@ export default class Pie extends Component {
     super();
     this.createPiePieceFromIndex = this.createPiePieceFromIndex.bind(this);
     this.createPiePieceFromAngles = this.createPiePieceFromAngles.bind(this);
+    this.getPointsAroundClock = this.getPointsAroundClock.bind(this);
+    this.getDisplayHour = this.getDisplayHour.bind(this);
+  }
+
+  getArc(additionalWidth=0) {
+    const { pieWidth } = this.props;
+    return shape.arc()
+      .outerRadius(pieWidth / 2 + additionalWidth)
+      .padAngle(0.05)
+      .innerRadius(30);
+  }
+
+  getPointsAroundClock() {
+    const { is12HrMode, pieWidth, selectedIndex } = this.props;
+    const totalNumPoints = is12HrMode ? 12 : 24;
+    const constantMultiplier = is12HrMode ? 1/6 : 1/12;
+    const margin = selectedIndex < 0 ? 15 : 25;
+    return [...Array(totalNumPoints).keys()].
+      map(n => n * constantMultiplier * Math.PI).
+      map(angle => pointRadial(angle, pieWidth / 2 + margin)).
+      map(point => [point[0], point[1] + selectedAdditionalWidth / 2]);
+  }
+
+  getDisplayHour(hour) {
+    const { is12HrMode } = this.props;
+    if (is12HrMode) {
+      return hour == 0 ? 12 : hour;
+    }
+    return hour % 2 === 0 ? hour : "."
   }
 
   createPiePieceFromIndex(index) {
     const {
       displayData,
-      highlightedIndex,
+      selectedIndex,
       is12HrMode,
       showAM,
       date,
@@ -66,25 +95,17 @@ export default class Pie extends Component {
     if (angles === null) {
       return null;
     }
-    const shouldHighlight = highlightedIndex === index;
-    return this.createPiePieceFromAngles(angles.startAngle, angles.endAngle, shouldHighlight);
+    const isSelected = selectedIndex === index;
+    return this.createPiePieceFromAngles(angles.startAngle, angles.endAngle, isSelected);
   }
 
-  createPiePieceFromAngles(startAngle, endAngle, shouldHighlight) {
-    const { pieWidth } = this.props;
+  createPiePieceFromAngles(startAngle, endAngle, isSelected) {
     if (startAngle === null || endAngle === null) {
       return null;
     }
     const angles = { startAngle, endAngle };
-    const highlightedArc = d3.shape.arc()
-      .outerRadius(pieWidth / 2 + 10)
-      .padAngle(0.05)
-      .innerRadius(30);
-    const unselectedArc = d3.shape.arc()
-      .outerRadius(pieWidth / 2)
-      .padAngle(0.05)
-      .innerRadius(30);
-    return shouldHighlight ? highlightedArc(angles) : unselectedArc(angles);
+    const additionalWidth = isSelected ? selectedAdditionalWidth : 0;
+    return this.getArc(additionalWidth)(angles);
   }
 
   render() {
@@ -102,7 +123,6 @@ export default class Pie extends Component {
       onHrModePress,
       onAMPMPress,
     } = this.props;
-    // const margin = styles.container.margin;
     const x = width / 2;
     const y = height / 2;
     const pie = displayData.map((item, index) => {
@@ -110,6 +130,7 @@ export default class Pie extends Component {
       const color = getColor(index);
       return piePiece === null ? null : (
         <Path
+          key={getKey(item)}
           d={piePiece}
           stroke={color}
           fill={color}
@@ -156,6 +177,22 @@ export default class Pie extends Component {
               strokeWidth="2"
               rotation={rotation}
             />
+            <G>
+              {
+                this.getPointsAroundClock().map((point, index) => {
+                  return (
+                    <Text
+                      key={index}
+                      x={x + point[0]}
+                      y={y + point[1]}
+                      textAnchor="middle"
+                    >
+                      {this.getDisplayHour(index)}
+                    </Text>
+                  );
+                })
+              }
+            </G>
           </Svg>
         </View>
       </TouchableWithoutFeedback>
@@ -176,7 +213,7 @@ Pie.propTypes = {
   pieWidth: PropTypes.number.isRequired,
   width: PropTypes.number.isRequired,
   height: PropTypes.number.isRequired,
-  highlightedIndex: PropTypes.number.isRequired,
+  selectedIndex: PropTypes.number.isRequired,
   onPieItemPress: PropTypes.func.isRequired,
   onPieItemLongPress: PropTypes.func.isRequired,
   onBackgroundPress: PropTypes.func.isRequired,
