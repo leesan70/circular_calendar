@@ -2,11 +2,19 @@ import React, { Component, Fragment } from 'react';
 import {
   StyleSheet,
   Text,
+  SafeAreaView,
   ScrollView,
   Dimensions,
   View,
   TouchableOpacity,
 } from 'react-native';
+import {
+  Avatar,
+  Paragraph,
+  Card,
+  Button,
+  IconButton,
+} from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import moment from 'moment';
 import Pie from '../components/Pie';
@@ -16,29 +24,23 @@ import importedData from '../../resources/data';
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'column',
-    backgroundColor: 'whitesmoke',
-    marginTop: 21,
+  },
+  content: {
+    padding: 4,
+  },
+  card: {
+    margin: 4,
   },
   chart: {
     flex: 1,
     justifyContent: 'center',
     flexDirection: 'column',
   },
-  calendar: {
-    flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'column',
-  },
   chart_title: {
-    paddingTop: 15,
+    padding: 5,
     textAlign: 'center',
-    paddingBottom: 5,
-    paddingLeft: 5,
     fontSize: 18,
     backgroundColor: 'white',
-    color: 'grey',
     fontWeight: 'bold',
   },
   floating_button: {
@@ -172,6 +174,7 @@ export default class ScheduleScreen extends Component {
   }
 
   render() {
+    const background = 'white';
     const { width } = Dimensions.get('window');
     const {
       selectedIndex,
@@ -185,8 +188,11 @@ export default class ScheduleScreen extends Component {
     const dateString = date.format('MMM Do YYYY');
 
     return (
-      <Fragment>
-        <ScrollView>
+      <SafeAreaView style={{flex: 1}}>
+        <ScrollView 
+          style={[styles.container, { backgroundColor: background }]}
+          contentContainerStyle={styles.content}
+        >
           <View style={styles.container}>
             <Text style={styles.chart_title}>{dateString}</Text>
             <Pie
@@ -206,20 +212,42 @@ export default class ScheduleScreen extends Component {
               showAM={showAM}
               date={date}
             />
-            <Text style={styles.chart_title}>
-              {displayItem && displayItem.title}
-            </Text>
-            <ScrollView>
-              <Text>
-                {displayItem && displayItem.content}
-              </Text>
-              <Text>
-                {displayItem && `Start Date: ${displayItem.startDate.format('h:mm a (MMMM Do)')}`}
-              </Text>
-              <Text>
-                {displayItem && `End Date: ${displayItem.endDate.format('h:mm a (MMMM Do)')}`}
-              </Text>
-            </ScrollView>
+            {
+              displayItem && displayItem.title &&
+                <Card style={styles.card}>
+                  <Card.Title
+                    title={displayItem.title}
+                    subtitle={
+                      "From: " + displayItem.startDate.format('LT') + " To: " + displayItem.endDate.format('LT')
+                    }
+                    // left={(props) => <Avatar.Icon {...props} icon="folder" />}
+                    right={(props) => (
+                      <IconButton {...props} icon="more-vert" onPress={() => {alert('Implement edit/delete for todos!')}} />
+                    )}
+                  />
+                  <Card.Content>
+                    <Paragraph>
+                      {displayItem.content}
+                    </Paragraph>
+                  </Card.Content>
+                </Card>
+            }
+            {
+              displayItem && !displayItem.title &&
+              <Card style={styles.card} onLongPress={() => navigation.navigate('MyModal')}>
+                <Card.Title
+                  title="Free Time"
+                  subtitle={
+                    "From: " + displayItem.startDate.format('LT') + " To: " + displayItem.endDate.format('LT')
+                  }
+                />
+                <Card.Content>
+                  <Paragraph>
+                    {"Long press me to add a todo item for this slot!"}
+                  </Paragraph>
+                </Card.Content>
+              </Card>
+            }
           </View>
         </ScrollView>
         <TouchableOpacity style={styles.floating_button}>
@@ -240,7 +268,7 @@ export default class ScheduleScreen extends Component {
             })}
           />
         </TouchableOpacity>
-      </Fragment>
+      </SafeAreaView>
     );
   }
 }
