@@ -87,6 +87,17 @@ export default class ScheduleScreen extends Component {
     clearInterval(this.intervalID);
   }
 
+  shouldComponentUpdate(nextProps, nextState) {
+    const { date, ...rest } = this.state;
+    const { date:nextDate, ...nextRest } = nextState;
+    // Re-render only when there's difference in minutes in dates or when any other state changes.
+    return nextDate.minute() !== date.minute() ||
+      rest.data != nextRest.data ||
+      rest.selectedIndex !== nextRest.selectedIndex ||
+      rest.is12HrMode !== nextRest.is12HrMode ||
+      rest.showAM !== nextRest.showAM;
+  }
+
   tick() {
     this.setState({
       date: moment(),
