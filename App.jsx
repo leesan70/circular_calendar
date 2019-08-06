@@ -1,10 +1,13 @@
 import React, { Component } from 'react';
-import { View } from 'react-native';
+import { View, YellowBox, } from 'react-native';
 import { createAppContainer, createStackNavigator, createMaterialTopTabNavigator, } from 'react-navigation';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ScheduleScreen from './src/screens/ScheduleScreen';
 import CalendarScreen from './src/screens/CalendarScreen';
 import ModalScreen from './src/screens/ModalScreen';
+
+// Temporary ignore due to dependencies using componentWillReceiveProps
+YellowBox.ignoreWarnings(['Warning: componentWillReceiveProps']);
 
 const AppNavigator = createMaterialTopTabNavigator({
   Schedule: {
