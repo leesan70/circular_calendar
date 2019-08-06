@@ -15,6 +15,9 @@ import {
   Button,
   IconButton,
 } from 'react-native-paper';
+import {
+  Header,
+} from 'react-native-elements';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import moment from 'moment';
 import Pie from '../components/Pie';
@@ -188,87 +191,105 @@ export default class ScheduleScreen extends Component {
     const dateString = date.format('MMM Do YYYY');
 
     return (
-      <SafeAreaView style={{flex: 1}}>
-        <ScrollView 
-          style={[styles.container, { backgroundColor: background }]}
-          contentContainerStyle={styles.content}
-        >
-          <View style={styles.container}>
-            <Text style={styles.chart_title}>{dateString}</Text>
-            <Pie
-              pieWidth={150}
-              pieHeight={150}
-              onPieItemPress={this.onPieItemPress}
-              onPieItemLongPress={this.onPieItemPress}
-              onBackgroundPress={this.onBackgroundPress}
-              onHrModePress={this.onHrModePress}
-              onAMPMPress={this.onAMPMPress}
-              colors={Theme.colors}
-              width={width}
-              height={height}
-              displayData={displayData}
-              selectedIndex={selectedIndex}
-              is12HrMode={is12HrMode}
-              showAM={showAM}
-              date={date}
-            />
-            {
-              displayItem && displayItem.title &&
-                <Card style={styles.card}>
+      <Fragment>
+        <Header
+          leftComponent={{
+            icon: 'menu',
+            onPress: () => alert('Implement Side Drawer!')
+          }}
+          centerComponent={{
+            text: dateString,
+            style: { fontWeight: 'bold' }
+          }}
+          rightComponent={{
+            icon: 'home',
+            onPress: () => this.refs.scrollView.scrollTo({x: 0, y: 0, animated: true})
+          }}
+          backgroundColor='white'
+        />
+        <SafeAreaView style={{flex: 1}}>
+          <ScrollView 
+            style={[styles.container, { backgroundColor: background }]}
+            contentContainerStyle={styles.content}
+            ref="scrollView"
+          >
+            <View style={styles.container}>
+              {/* <Text style={styles.chart_title}>{dateString}</Text> */}
+              <Pie
+                pieWidth={150}
+                pieHeight={150}
+                onPieItemPress={this.onPieItemPress}
+                onPieItemLongPress={this.onPieItemPress}
+                onBackgroundPress={this.onBackgroundPress}
+                onHrModePress={this.onHrModePress}
+                onAMPMPress={this.onAMPMPress}
+                colors={Theme.colors}
+                width={width}
+                height={height}
+                displayData={displayData}
+                selectedIndex={selectedIndex}
+                is12HrMode={is12HrMode}
+                showAM={showAM}
+                date={date}
+              />
+              {
+                displayItem && displayItem.title &&
+                  <Card style={styles.card}>
+                    <Card.Title
+                      title={displayItem.title}
+                      subtitle={
+                        "From: " + displayItem.startDate.format('LT') + " To: " + displayItem.endDate.format('LT')
+                      }
+                      // left={(props) => <Avatar.Icon {...props} icon="folder" />}
+                      right={(props) => (
+                        <IconButton {...props} icon="more-vert" onPress={() => {alert('Implement edit/delete for todos!')}} />
+                      )}
+                    />
+                    <Card.Content>
+                      <Paragraph>
+                        {displayItem.content}
+                      </Paragraph>
+                    </Card.Content>
+                  </Card>
+              }
+              {
+                displayItem && !displayItem.title &&
+                <Card style={styles.card} onLongPress={() => navigation.navigate('MyModal')}>
                   <Card.Title
-                    title={displayItem.title}
+                    title="Free Time"
                     subtitle={
                       "From: " + displayItem.startDate.format('LT') + " To: " + displayItem.endDate.format('LT')
                     }
-                    // left={(props) => <Avatar.Icon {...props} icon="folder" />}
-                    right={(props) => (
-                      <IconButton {...props} icon="more-vert" onPress={() => {alert('Implement edit/delete for todos!')}} />
-                    )}
                   />
                   <Card.Content>
                     <Paragraph>
-                      {displayItem.content}
+                      {"Long press me to add a todo item for this slot!"}
                     </Paragraph>
                   </Card.Content>
                 </Card>
-            }
-            {
-              displayItem && !displayItem.title &&
-              <Card style={styles.card} onLongPress={() => navigation.navigate('MyModal')}>
-                <Card.Title
-                  title="Free Time"
-                  subtitle={
-                    "From: " + displayItem.startDate.format('LT') + " To: " + displayItem.endDate.format('LT')
-                  }
-                />
-                <Card.Content>
-                  <Paragraph>
-                    {"Long press me to add a todo item for this slot!"}
-                  </Paragraph>
-                </Card.Content>
-              </Card>
-            }
-          </View>
-        </ScrollView>
-        <TouchableOpacity style={styles.floating_button}>
-          <Icon
-            name="plus-circle"
-            size={70}
-            color="#694fad"
-            resizeMode="contain"
-            onPress={() => navigation.navigate('MyModal', {
-              addTodo: (todoItem) => {
-                const { data } = this.state;
-                const newData = data.slice();
-                newData.push(todoItem);
-                this.setState({
-                  data: newData
-                });
-              },
-            })}
-          />
-        </TouchableOpacity>
-      </SafeAreaView>
+              }
+            </View>
+          </ScrollView>
+          <TouchableOpacity style={styles.floating_button}>
+            <Icon
+              name="plus-circle"
+              size={70}
+              color="#694fad"
+              resizeMode="contain"
+              onPress={() => navigation.navigate('MyModal', {
+                addTodo: (todoItem) => {
+                  const { data } = this.state;
+                  const newData = data.slice();
+                  newData.push(todoItem);
+                  this.setState({
+                    data: newData
+                  });
+                },
+              })}
+            />
+          </TouchableOpacity>
+        </SafeAreaView>
+      </Fragment>
     );
   }
 }
