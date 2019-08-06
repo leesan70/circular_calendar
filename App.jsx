@@ -1,13 +1,12 @@
 import React, { Component } from 'react';
 import { View } from 'react-native';
-import { createAppContainer, createStackNavigator } from 'react-navigation';
-import { createMaterialBottomTabNavigator } from 'react-navigation-material-bottom-tabs';
+import { createAppContainer, createStackNavigator, createMaterialTopTabNavigator, } from 'react-navigation';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ScheduleScreen from './src/screens/ScheduleScreen';
 import CalendarScreen from './src/screens/CalendarScreen';
 import ModalScreen from './src/screens/ModalScreen';
 
-const AppNavigator = createMaterialBottomTabNavigator({
+const AppNavigator = createMaterialTopTabNavigator({
   Schedule: {
     screen: ScheduleScreen,
     navigationOptions: {
@@ -29,10 +28,15 @@ const AppNavigator = createMaterialBottomTabNavigator({
     },
   },
 }, {
+  tabBarPosition: 'bottom',
   initialRouteName: 'Schedule',
-  activeColor: '#f0edf6',
-  inactiveColor: '#3e2465',
-  barStyle: { backgroundColor: '#694fad' },
+  tabBarOptions: {
+    showIcon: true,
+    activeTintColor: '#f0edf6',
+    inactiveTintColor: '#3e2465',
+    indicatorStyle: { backgroundColor: '#f0edf6' },
+    style: { backgroundColor: '#694fad' },
+  },
 });
 
 const RootStack = createStackNavigator(
