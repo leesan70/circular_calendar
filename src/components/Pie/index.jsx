@@ -12,7 +12,6 @@ import {
   Line,
   Text,
 } from 'react-native-svg';
-import { ButtonGroup } from 'react-native-elements';
 import PropTypes from 'prop-types';
 
 import * as shape from 'd3-shape';
@@ -120,8 +119,6 @@ export default class Pie extends Component {
       onPieItemPress,
       onPieItemLongPress,
       onBackgroundPress,
-      onHrModePress,
-      onAMPMPress,
     } = this.props;
     const x = width / 2;
     const y = height / 2;
@@ -141,27 +138,9 @@ export default class Pie extends Component {
     }).filter(item => item !== null);
     const rotation = getHandleAngle(date, is12HrMode, showAM);
 
-    const hrModeButtons = ["12 Hr", "24 Hr"];
-    const AMPMButtons = ["AM", "PM"];
-
     return (
       <TouchableWithoutFeedback onPress={onBackgroundPress}>
         <View width={width} style={styles.pie}>
-          <ButtonGroup
-            buttons={hrModeButtons}
-            selectedIndex={is12HrMode ? 0 : 1}
-            onPress={onHrModePress}
-            selectedButtonStyle={{ backgroundColor: '#694fad'}}
-          />
-          { 
-            is12HrMode && 
-              <ButtonGroup
-                buttons={AMPMButtons}
-                selectedIndex={showAM ? 0 : 1}
-                onPress={onAMPMPress}
-                selectedButtonStyle={{ backgroundColor: '#694fad'}}
-              />
-          }
           <Svg width={width} height={height}>
             <G translateX={x} translateY={y}>
               {pie}
@@ -217,8 +196,6 @@ Pie.propTypes = {
   onPieItemPress: PropTypes.func.isRequired,
   onPieItemLongPress: PropTypes.func.isRequired,
   onBackgroundPress: PropTypes.func.isRequired,
-  onHrModePress: PropTypes.func.isRequired,
-  onAMPMPress: PropTypes.func.isRequired,
   is12HrMode: PropTypes.bool.isRequired,
   showAM: PropTypes.bool.isRequired,
   date: PropTypes.instanceOf(moment).isRequired,

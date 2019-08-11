@@ -10,18 +10,13 @@ import {
   StatusBar,
 } from 'react-native';
 import {
-  Avatar,
-  Paragraph,
-  Card,
-  Button,
-  IconButton,
-} from 'react-native-paper';
-import {
   Header,
 } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import moment from 'moment';
 import Pie from '../components/Pie';
+import PieController from '../components/PieController';
+import TodoList from '../components/TodoList';
 import Theme from '../theme';
 import importedData from '../../resources/data';
 
@@ -176,7 +171,6 @@ export default class ScheduleScreen extends Component {
     } = this.state;
     const { navigation } = this.props;
     const displayData = this.prepareDisplayData();
-    const displayItem = displayData[selectedIndex];
     const dateString = date.format('MMM Do YYYY');
 
     return (
@@ -204,14 +198,18 @@ export default class ScheduleScreen extends Component {
             ref="scrollView"
           >
             <View style={styles.container}>
+              <PieController
+                is12HrMode={is12HrMode}
+                showAM={showAM}
+                onHrModePress={this.onHrModePress}
+                onAMPMPress={this.onAMPMPress}
+              />
               <Pie
                 pieWidth={150}
                 pieHeight={150}
                 onPieItemPress={this.onPieItemPress}
                 onPieItemLongPress={this.onPieItemPress}
                 onBackgroundPress={this.onBackgroundPress}
-                onHrModePress={this.onHrModePress}
-                onAMPMPress={this.onAMPMPress}
                 colors={Theme.colors}
                 width={width}
                 height={height}
@@ -221,42 +219,7 @@ export default class ScheduleScreen extends Component {
                 showAM={showAM}
                 date={date}
               />
-              {
-                displayItem && displayItem.title &&
-                  <Card style={styles.card}>
-                    <Card.Title
-                      title={displayItem.title}
-                      subtitle={
-                        "From: " + displayItem.startDate.format('LT') + " To: " + displayItem.endDate.format('LT')
-                      }
-                      // left={(props) => <Avatar.Icon {...props} icon="folder" />}
-                      right={(props) => (
-                        <IconButton {...props} icon="more-vert" onPress={() => {alert('Implement edit/delete for todos!')}} />
-                      )}
-                    />
-                    <Card.Content>
-                      <Paragraph>
-                        {displayItem.content}
-                      </Paragraph>
-                    </Card.Content>
-                  </Card>
-              }
-              {
-                displayItem && !displayItem.title &&
-                <Card style={styles.card} onLongPress={() => navigation.navigate('MyModal')}>
-                  <Card.Title
-                    title="Free Time"
-                    subtitle={
-                      "From: " + displayItem.startDate.format('LT') + " To: " + displayItem.endDate.format('LT')
-                    }
-                  />
-                  <Card.Content>
-                    <Paragraph>
-                      {"Long press me to add a todo item for this slot!"}
-                    </Paragraph>
-                  </Card.Content>
-                </Card>
-              }
+              <TodoList selectedIndex={selectedIndex} displayData={displayData} />
             </View>
           </ScrollView>
           <TouchableOpacity style={styles.floating_button}>
