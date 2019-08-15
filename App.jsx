@@ -1,10 +1,11 @@
-import React, { Component } from 'react';
-import { View, YellowBox, } from 'react-native';
-import { createAppContainer, createStackNavigator, createMaterialTopTabNavigator, } from 'react-navigation';
+import moment from 'moment';
+import React from 'react';
+import { View, YellowBox } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import ScheduleScreen from './src/screens/ScheduleScreen';
+import { createAppContainer, createMaterialTopTabNavigator, createStackNavigator } from 'react-navigation';
 import CalendarScreen from './src/screens/CalendarScreen';
 import ModalScreen from './src/screens/ModalScreen';
+import ScheduleScreen from './src/screens/ScheduleScreen';
 
 // Temporary ignore due to dependencies using componentWillReceiveProps, ViewPagerAndroid
 YellowBox.ignoreWarnings(['Warning: componentWillReceiveProps', 'Warning: ViewPagerAndroid']);
@@ -12,6 +13,9 @@ YellowBox.ignoreWarnings(['Warning: componentWillReceiveProps', 'Warning: ViewPa
 const AppNavigator = createMaterialTopTabNavigator({
   Schedule: {
     screen: ScheduleScreen,
+    params: {
+      dataDate: moment().startOf('day'),
+    },
     navigationOptions: {
       tabBarIcon: ({ tintColor }) => (
         <View>

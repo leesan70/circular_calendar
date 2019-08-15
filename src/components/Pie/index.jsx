@@ -1,40 +1,13 @@
 // Reference: https://medium.com/the-react-native-log/animated-charts-in-react-native-using-d3-and-art-21cd9ccf6c58
-import React, { Component } from 'react';
-import {
-  StyleSheet,
-  View,
-  TouchableWithoutFeedback,
-} from 'react-native';
-import {
-  Svg,
-  G,
-  Path,
-  Line,
-  Text,
-} from 'react-native-svg';
-import PropTypes from 'prop-types';
-
-import * as shape from 'd3-shape';
 import { pointRadial } from 'd3';
+import * as shape from 'd3-shape';
 import moment from 'moment';
-
-import { getHandleAngle, getAnglesFromTodo, } from '../../services/angle';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
+import { G, Line, Path, Svg, Text } from 'react-native-svg';
+import { getAnglesFromTodo, getHandleAngle } from '../../services/angle';
 import Theme from '../../theme';
-
-const styles = StyleSheet.create({
-  container: {
-    margin: 20,
-  },
-  label: {
-    fontSize: 15,
-    marginTop: 5,
-    fontWeight: 'normal',
-  },
-  pie: {
-    flexDirection: 'column',
-    justifyContent: 'center',
-  },
-});
 
 const selectedAdditionalWidth = 10;
 
@@ -88,9 +61,9 @@ export default class Pie extends Component {
       selectedIndex,
       is12HrMode,
       showAM,
-      date,
+      dataDate,
     } = this.props;
-    const angles = getAnglesFromTodo(displayData[index], is12HrMode, showAM, date);
+    const angles = getAnglesFromTodo(displayData[index], is12HrMode, showAM, dataDate);
     if (angles === null) {
       return null;
     }
@@ -109,7 +82,7 @@ export default class Pie extends Component {
 
   render() {
     const {
-      date,
+      displayDate,
       is12HrMode,
       showAM,
       width,
@@ -123,20 +96,22 @@ export default class Pie extends Component {
     const x = width / 2;
     const y = height / 2;
     const pie = displayData.map((item, index) => {
+      const isTodoItem = displayData[index].hasOwnProperty('title');
       const piePiece = this.createPiePieceFromIndex(index);
-      const color = getColor(index);
+      const stroke = isTodoItem ? getColor(index) : '#ADADAD';
+      const fill = isTodoItem ? getColor(index) : 'whitesmoke';
       return piePiece === null ? null : (
         <Path
           key={getKey(item)}
           d={piePiece}
-          stroke={color}
-          fill={color}
-          onPress={() => onPieItemPress(index)}
-          onLongPress={() => onPieItemLongPress(index)}
+          stroke={stroke}
+          fill={fill}
+          onPress={isTodoItem ? () => onPieItemPress(index) : undefined}
+          onLongPress={isTodoItem ? () => onPieItemLongPress(index) : undefined}
         />
       );
     }).filter(item => item !== null);
-    const rotation = getHandleAngle(date, is12HrMode, showAM);
+    const rotation = getHandleAngle(displayDate, is12HrMode, showAM);
 
     return (
       <TouchableWithoutFeedback onPress={onBackgroundPress}>
@@ -179,7 +154,7 @@ export default class Pie extends Component {
   }
 }
 
-const pieData = PropTypes.shape({
+const todoShape = PropTypes.shape({
   startDate: PropTypes.instanceOf(moment).isRequired,
   endDate: PropTypes.instanceOf(moment).isRequired,
   title: PropTypes.string,
@@ -188,7 +163,7 @@ const pieData = PropTypes.shape({
 });
 
 Pie.propTypes = {
-  displayData: PropTypes.arrayOf(pieData),
+  displayData: PropTypes.arrayOf(todoShape),
   pieWidth: PropTypes.number.isRequired,
   width: PropTypes.number.isRequired,
   height: PropTypes.number.isRequired,
@@ -198,9 +173,25 @@ Pie.propTypes = {
   onBackgroundPress: PropTypes.func.isRequired,
   is12HrMode: PropTypes.bool.isRequired,
   showAM: PropTypes.bool.isRequired,
-  date: PropTypes.instanceOf(moment).isRequired,
+  dataDate: PropTypes.instanceOf(moment).isRequired,
+  displayDate: PropTypes.instanceOf(moment).isRequired,
 };
 
 Pie.defaultProps = {
   displayData: [],
 };
+
+const styles = StyleSheet.create({
+  container: {
+    margin: 20,
+  },
+  label: {
+    fontSize: 15,
+    marginTop: 5,
+    fontWeight: 'normal',
+  },
+  pie: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+  },
+});

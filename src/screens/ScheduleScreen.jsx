@@ -1,61 +1,29 @@
-import React, { Component, Fragment } from 'react';
-import {
-  StyleSheet,
-  Text,
-  SafeAreaView,
-  ScrollView,
-  Dimensions,
-  View,
-  TouchableOpacity,
-  StatusBar,
-} from 'react-native';
-import {
-  Header,
-} from 'react-native-elements';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import AsyncStorage from '@react-native-community/async-storage';
 import moment from 'moment';
+import React, { Component, Fragment } from 'react';
+import { ActivityIndicator, Dimensions, SafeAreaView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Header } from 'react-native-elements';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { ScrollView } from 'react-navigation';
 import Pie from '../components/Pie';
 import PieController from '../components/PieController';
 import TodoList from '../components/TodoList';
+import { deserializeData, serializeData } from '../services/serialize';
 import Theme from '../theme';
-import importedData from '../../resources/data';
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: 4,
-  },
-  card: {
-    margin: 4,
-  },
-  floating_button: {
-    position: 'absolute',
-    width: 70,
-    height: 70,
-    alignItems: 'center',
-    justifyContent: 'center',
-    right: 10,
-    bottom: 10,
-  },
-});
 
 const height = 220;
-
-function getData(date) {
-  return importedData.todoItemList;
-}
 
 export default class ScheduleScreen extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      data: getData(),
+      isLoaded: false,
+      data: [],
       selectedIndex: -1,
-      date: moment(),
+      dataDate: null,
+      displayDate: moment(),
       is12HrMode: false,
-      showAM: false,
+      showAM: true,
     };
     this.onPieItemPress = this.onPieItemPress.bind(this);
     this.onPieItemLongPress = this.onPieItemLongPress.bind(this);
@@ -64,23 +32,74 @@ export default class ScheduleScreen extends Component {
     this.onAMPMPress = this.onAMPMPress.bind(this);
     this.prepareDisplayData = this.prepareDisplayData.bind(this);
     this.tick = this.tick.bind(this);
+
+    this.getData = this.getData.bind(this);
+    this.setData = this.setData.bind(this);
+    this.onFocus = this.onFocus.bind(this);
+  }
+
+  async setData(data, dataDate) {
+    try {
+      const dataDateString = dataDate.format('YYYY-MM-DD');
+      const serializedData = serializeData(data);
+      await AsyncStorage.setItem(dataDateString, serializedData);
+      // Sync state with AsyncStorage
+      this.getData();
+    } catch (e) {
+      // Error setting data
+      console.log(e.message);
+    }
+  }
+
+  async getData() {
+    try {
+      const { dataDate } = this.state;
+      const dataDateString = dataDate.format('YYYY-MM-DD');
+      const data = await AsyncStorage.getItem(dataDateString) || '[]';
+      const deserializedData = deserializeData(data);
+      this.setState({
+        isLoaded: true,
+        data: deserializedData,
+      })
+    } catch(e) {
+      // Error getting data
+      console.log(e.message);
+    }
+  }
+
+  onFocus() {
+    const { dataDate } = this.state;
+    const propDataDate = this.props.navigation.getParam('dataDate');
+    if (!dataDate || propDataDate && !dataDate.isSame(propDataDate, 'day')) {
+      this.setState({
+        selectedIndex: -1,
+        dataDate: propDataDate,
+        isLoaded: false,
+      }, this.getData);
+    }
   }
 
   componentDidMount() {
+    this.focusListener = this.props.navigation.addListener('didFocus', this.onFocus);
     this.intervalID = setInterval(
       () => this.tick(),
       1000
     );
+    // onFocus gets called as the screen loads
   }
+
   componentWillUnmount() {
+    this.focusListener.remove();
     clearInterval(this.intervalID);
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    const { date, ...rest } = this.state;
-    const { date:nextDate, ...nextRest } = nextState;
-    // Re-render only when there's difference in minutes in dates or when any other state changes.
-    return nextDate.minute() !== date.minute() ||
+    const { displayDate, ...rest } = this.state;
+    const { displayDate:nextDisplayDate, ...nextRest } = nextState;
+    // Re-render only when there's difference in minutes in displayDates or when any other state changes.
+    return nextDisplayDate.minute() !== displayDate.minute() ||
+      rest.dataDate && nextRest.dataDate && !rest.dataDate.isSame(nextRest.dataDate, 'day') ||
+      rest.isLoaded != nextRest.isLoaded ||
       rest.data != nextRest.data ||
       rest.selectedIndex !== nextRest.selectedIndex ||
       rest.is12HrMode !== nextRest.is12HrMode ||
@@ -89,7 +108,7 @@ export default class ScheduleScreen extends Component {
 
   tick() {
     this.setState({
-      date: moment(),
+      displayDate: moment(),
     });
   }
 
@@ -111,8 +130,11 @@ export default class ScheduleScreen extends Component {
 
   onHrModePress(hrModeIndex) {
     const is12HrMode = hrModeIndex === 0;
+    const { selectedIndex:prevSelectedIndex } = this.state;
+    const selectedIndex = is12HrMode ? -1 : prevSelectedIndex;
     this.setState({
       is12HrMode,
+      selectedIndex,
     });
   }
 
@@ -120,14 +142,20 @@ export default class ScheduleScreen extends Component {
     const showAM = AMPMIndex === 0;
     this.setState({
       showAM,
+      selectedIndex: -1,
     });
   }
 
   prepareDisplayData() {
-    const { data, date } = this.state;
+    const storage = AsyncStorage;
+    const { data, dataDate } = this.state;
+    // For the initial render
+    if (!dataDate) {
+      return null;
+    }
     const displayData = [];
-    const startOfDay = date.clone().startOf('day');
-    const endOfDay = date.clone().endOf('day');
+    const startOfDay = dataDate.clone().startOf('day');
+    const endOfDay = dataDate.clone().endOf('day');
     // Empty data means free time all day
     if (!data || !data.length) {
       return [{
@@ -164,84 +192,122 @@ export default class ScheduleScreen extends Component {
     const background = 'white';
     const { width } = Dimensions.get('window');
     const {
+      isLoaded,
       selectedIndex,
       is12HrMode,
       showAM,
-      date,
+      dataDate,
+      displayDate,
     } = this.state;
     const { navigation } = this.props;
     const displayData = this.prepareDisplayData();
-    const dateString = date.format('MMM Do YYYY');
+    const dateString = dataDate ? dataDate.format('MMM Do YYYY') : '';
 
     return (
       <Fragment>
-        <Header
-          leftComponent={{
-            icon: 'menu',
-            onPress: () => alert('Implement Side Drawer!')
-          }}
-          centerComponent={{
-            text: dateString,
-            style: { fontWeight: 'bold' }
-          }}
-          rightComponent={{
-            icon: 'home',
-            onPress: () => this.refs.scrollView.scrollTo({x: 0, y: 0, animated: true})
-          }}
-          backgroundColor='white'
-          containerStyle={{ marginTop: ((StatusBar.currentHeight || 0) * -1) }}
-        />
-        <SafeAreaView style={{flex: 1}}>
-          <ScrollView 
-            style={[styles.container, { backgroundColor: background }]}
-            contentContainerStyle={styles.content}
-            ref="scrollView"
-          >
-            <View style={styles.container}>
-              <PieController
-                is12HrMode={is12HrMode}
-                showAM={showAM}
-                onHrModePress={this.onHrModePress}
-                onAMPMPress={this.onAMPMPress}
-              />
-              <Pie
-                pieWidth={150}
-                pieHeight={150}
-                onPieItemPress={this.onPieItemPress}
-                onPieItemLongPress={this.onPieItemPress}
-                onBackgroundPress={this.onBackgroundPress}
-                colors={Theme.colors}
-                width={width}
-                height={height}
-                displayData={displayData}
-                selectedIndex={selectedIndex}
-                is12HrMode={is12HrMode}
-                showAM={showAM}
-                date={date}
-              />
-              <TodoList selectedIndex={selectedIndex} displayData={displayData} />
+        {
+          !isLoaded &&
+            <View style={styles.loading_button}>
+              <ActivityIndicator size='large' color='#694fad'/>
             </View>
-          </ScrollView>
-          <TouchableOpacity style={styles.floating_button}>
-            <Icon
-              name="plus-circle"
-              size={70}
-              color="#694fad"
-              resizeMode="contain"
-              onPress={() => navigation.navigate('MyModal', {
-                addTodo: (todoItem) => {
-                  const { data } = this.state;
-                  const newData = data.slice();
-                  newData.push(todoItem);
-                  this.setState({
-                    data: newData
-                  });
-                },
-              })}
+        }
+        {
+          isLoaded &&
+          <Fragment>
+            <Header
+              leftComponent={{
+                icon: 'menu',
+                onPress: () => alert('Implement Side Drawer!')
+              }}
+              centerComponent={{
+                text: dateString,
+                style: { fontWeight: 'bold' }
+              }}
+              // rightComponent={{
+              //   icon: 'home',
+              //   onPress: () => this.refs.scrollView.scrollTo({x: 0, y: 0, animated: true})
+              // }}
+              backgroundColor='white'
+              containerStyle={{ marginTop: ((StatusBar.currentHeight || 0) * -1) }}
             />
-          </TouchableOpacity>
-        </SafeAreaView>
+            <SafeAreaView style={{flex: 1}}>
+              <ScrollView 
+                style={[styles.container, { backgroundColor: background }]}
+                contentContainerStyle={styles.content}
+                // ref="scrollView"
+              >
+                <View style={styles.container}>
+                  <PieController
+                    is12HrMode={is12HrMode}
+                    showAM={showAM}
+                    onHrModePress={this.onHrModePress}
+                    onAMPMPress={this.onAMPMPress}
+                  />
+                  <Pie
+                    pieWidth={150}
+                    pieHeight={150}
+                    onPieItemPress={this.onPieItemPress}
+                    onPieItemLongPress={this.onPieItemPress}
+                    onBackgroundPress={this.onBackgroundPress}
+                    colors={Theme.colors}
+                    width={width}
+                    height={height}
+                    displayData={displayData}
+                    selectedIndex={selectedIndex}
+                    is12HrMode={is12HrMode}
+                    showAM={showAM}
+                    dataDate={dataDate}
+                    displayDate={displayDate}
+                  />
+                  <TodoList selectedIndex={selectedIndex} displayData={displayData} />
+                </View>
+              </ScrollView>
+              <TouchableOpacity style={styles.floating_button}>
+                <Icon
+                  name="plus-circle"
+                  size={70}
+                  color="#694fad"
+                  resizeMode="contain"
+                  onPress={() => navigation.navigate('MyModal', {
+                    addTodo: (todoItem) => {
+                      const { data, dataDate } = this.state;
+                      const newData = data.slice();
+                      newData.push(todoItem);
+                      this.setData(newData, dataDate);
+                    },
+                    dataDate: this.state.dataDate,
+                  })}
+                />
+              </TouchableOpacity>
+            </SafeAreaView>
+          </Fragment>
+        }
       </Fragment>
     );
   }
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  loading_button: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  content: {
+    padding: 4,
+  },
+  card: {
+    margin: 4,
+  },
+  floating_button: {
+    position: 'absolute',
+    width: 70,
+    height: 70,
+    alignItems: 'center',
+    justifyContent: 'center',
+    right: 10,
+    bottom: 10,
+  },
+});

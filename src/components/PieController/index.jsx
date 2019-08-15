@@ -1,5 +1,6 @@
 import React, { Fragment } from 'react';
 import { ButtonGroup } from 'react-native-elements';
+import PropTypes from 'prop-types';
 
 export default function PieController({ is12HrMode, showAM, onHrModePress, onAMPMPress }) {
   const hrModeButtons = ["12 Hr", "24 Hr"];
@@ -24,3 +25,10 @@ export default function PieController({ is12HrMode, showAM, onHrModePress, onAMP
     </Fragment>
   );
 }
+
+PieController.propTypes = {
+  is12HrMode: PropTypes.bool.isRequired,
+  showAM: PropTypes.bool.isRequired,
+  onHrModePress: PropTypes.func.isRequired,
+  onAMPMPress: PropTypes.func.isRequired,
+};

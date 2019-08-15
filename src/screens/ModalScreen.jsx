@@ -1,8 +1,8 @@
-import React, { Component } from 'react';
-import { View, Text, Button } from 'react-native';
 import moment from 'moment';
+import React, { Component } from 'react';
+import { Button, Text, View } from 'react-native';
 
-export default class ModalScreen extends React.Component {
+export default class ModalScreen extends Component {
   render() {
     return (
       <View style={{
@@ -22,10 +22,10 @@ export default class ModalScreen extends React.Component {
           <Text>Testing a modal</Text>
           <Button
             onPress={() => {
-              const currDate = moment();
-              const y = currDate.year();
-              const m = currDate.month();
-              const d = currDate.date();
+              const dataDate = this.props.navigation.getParam('dataDate');
+              const y = dataDate.year();
+              const m = dataDate.month();
+              const d = dataDate.date();
               this.props.navigation.getParam('addTodo')({
                 startDate: moment([y, m, d, 20, 0]),
                 endDate: moment([y, m, d, 21, 0]),
