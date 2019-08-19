@@ -33,9 +33,33 @@ export default class ScheduleScreen extends Component {
     this.prepareDisplayData = this.prepareDisplayData.bind(this);
     this.tick = this.tick.bind(this);
 
+    this.addTodo = this.addTodo.bind(this);
     this.getData = this.getData.bind(this);
     this.setData = this.setData.bind(this);
     this.onFocus = this.onFocus.bind(this);
+  }
+
+  // TODO:
+  // 1. Handle todo ranging through multiple dates 
+  // 2. Handle todo overlap issue
+  // - implement function looking over the affected dates returning boolean
+  // - only add if above function returns true
+  async addTodo(todo, dataDate) {
+    try {
+      this.getData().then(async () => {
+        const { data: prevData } = this.state;
+        const newData = prevData.slice();
+        newData.push(todo);
+        const dataDateString = dataDate.format('YYYY-MM-DD');
+        const serializedData = serializeData(newData);
+        await AsyncStorage.setItem(dataDateString, serializedData);
+        // Sync state with AsyncStorage
+        this.getData();
+      });
+    } catch (e) {
+      // Error setting data
+      console.log(e.message);
+    }
   }
 
   async setData(data, dataDate) {
@@ -269,12 +293,7 @@ export default class ScheduleScreen extends Component {
                   color="#694fad"
                   resizeMode="contain"
                   onPress={() => navigation.navigate('MyModal', {
-                    addTodo: (todoItem) => {
-                      const { data, dataDate } = this.state;
-                      const newData = data.slice();
-                      newData.push(todoItem);
-                      this.setData(newData, dataDate);
-                    },
+                    addTodo: this.addTodo,
                     dataDate: this.state.dataDate,
                   })}
                 />

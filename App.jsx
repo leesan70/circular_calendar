@@ -56,11 +56,10 @@ const RootStack = createStackNavigator(
     },
   },
   {
-    mode: 'modal',
     headerMode: 'none',
     cardStyle: {
       // backgroundColor: 'transparent',
-      opacity: 0.9,
+      // opacity: 0.9,
     },
   },
 );
