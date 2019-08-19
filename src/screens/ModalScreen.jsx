@@ -16,16 +16,14 @@ export default class ModalScreen extends Component {
       isEndDateTimePickerVisible: false,
       startDate: dataDate,
       endDate: dataDate.clone().add(30, "minutes"),
-      title: '',
-      content: '',
     };
   }
 
   componentWillUnmount() {
     const addTodo = this.props.navigation.getParam("addTodo");
-    const { title = "Untitled", content, startDate, endDate } = this.state;
+    const { title = "Untitled", content = "", startDate, endDate } = this.state;
     const dataDate = startDate.clone().startOf("day");
-    if (title !== "Untitled" || content) {
+    if (title !== "Untitled" || content !== "") {
       const todo = { startDate, endDate, title, content, done: false };
       addTodo(todo, dataDate)
         .then(this.props.navigation.navigate('Schedule', { dataDate }));
