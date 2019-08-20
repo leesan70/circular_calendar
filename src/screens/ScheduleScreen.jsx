@@ -9,6 +9,7 @@ import Pie from '../components/Pie';
 import PieController from '../components/PieController';
 import TodoList from '../components/TodoList';
 import { deserializeData, serializeData } from '../services/serialize';
+import { checkTodoAddable } from '../services/todo';
 import Theme from '../theme';
 
 const height = 220;
@@ -34,32 +35,63 @@ export default class ScheduleScreen extends Component {
     this.tick = this.tick.bind(this);
 
     this.addTodo = this.addTodo.bind(this);
+    this.editTodo = this.editTodo.bind(this);
+    this.deleteTodo = this.deleteTodo.bind(this);
     this.getData = this.getData.bind(this);
     this.setData = this.setData.bind(this);
     this.onFocus = this.onFocus.bind(this);
+    
+    AsyncStorage.clear();
   }
 
-  // TODO:
-  // 1. Handle todo ranging through multiple dates 
-  // 2. Handle todo overlap issue
-  // - implement function looking over the affected dates returning boolean
-  // - only add if above function returns true
-  async addTodo(todo, dataDate) {
+  async addTodo(todo) {
+    if (!await checkTodoAddable(todo)) {
+      alert("New todo overlaps with an existing one!");
+      return;
+    }
     try {
-      this.getData().then(async () => {
-        const { data: prevData } = this.state;
-        const newData = prevData.slice();
+      const { startDate, endDate } = todo;
+      const date = startDate.clone();
+      while (date.isSameOrBefore(endDate)) {
+        const dateString = date.startOf('day').format('YYYY-MM-DD');
+        const prevSerializedData = await AsyncStorage.getItem(dateString) || '[]';
+        const prevDeserializedData = deserializeData(prevSerializedData);
+        const newData = prevDeserializedData.slice();
         newData.push(todo);
-        const dataDateString = dataDate.format('YYYY-MM-DD');
-        const serializedData = serializeData(newData);
-        await AsyncStorage.setItem(dataDateString, serializedData);
-        // Sync state with AsyncStorage
-        this.getData();
-      });
+        await AsyncStorage.setItem(dateString, serializeData(newData));
+        date.add(1, 'day');
+      } 
+      // Sync state with AsyncStorage
+      this.getData();
     } catch (e) {
       // Error setting data
       console.log(e.message);
     }
+    
+
+    // try {
+    //   this.getData().then(async () => {
+        // const { data: prevData } = this.state;
+        // const newData = prevData.slice();
+        // newData.push(todo);
+        // const dataDateString = dataDate.format('YYYY-MM-DD');
+        // const serializedData = serializeData(newData);
+    //     await AsyncStorage.setItem(dataDateString, serializedData);
+    //     // Sync state with AsyncStorage
+    //     this.getData();
+    //   });
+    // } catch (e) {
+    //   // Error setting data
+    //   console.log(e.message);
+    // }
+  }
+
+  async editTodo() {
+    return;
+  }
+
+  async deleteTodo() {
+    return;
   }
 
   async setData(data, dataDate) {
@@ -283,7 +315,12 @@ export default class ScheduleScreen extends Component {
                     dataDate={dataDate}
                     displayDate={displayDate}
                   />
-                  <TodoList selectedIndex={selectedIndex} displayData={displayData} />
+                  <TodoList
+                    selectedIndex={selectedIndex}
+                    displayData={displayData}
+                    deleteTodo={this.deleteTodo}
+                    editTodo={this.editTodo}
+                  />
                 </View>
               </ScrollView>
               <TouchableOpacity style={styles.floating_button}>

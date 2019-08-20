@@ -24,15 +24,13 @@ export default class ModalScreen extends Component {
     const { title = "Untitled", content = "", startDate, endDate } = this.state;
     const dataDate = startDate.clone().startOf("day");
     if (title !== "Untitled" || content !== "") {
-      const todo = { startDate, endDate, title, content, done: false };
-      addTodo(todo, dataDate)
+      const todo = { startDate, endDate, title, content };
+      addTodo(todo)
         .then(this.props.navigation.navigate('Schedule', { dataDate }));
     }
   }
 
   showStartDateTimePicker = () => {
-    const { startDate } = this.state;
-    const timeNow = moment().
     this.setState({ isStartDateTimePickerVisible: true });
   };
 

@@ -25,16 +25,15 @@ function FreeItem({ displayItem }) {
  );
 }
 
-
-
 function TodoItem({ displayItem }) {
   return (
     <Card style={styles.todoItem}>
       <Card.Title
         title={displayItem.title}
-        subtitle={
+        subtitle={() => {
+          const adjStartDate = 
           displayItem.startDate.format('LT') + " - " + displayItem.endDate.format('LT')
-        }
+        }}
         // left={(props) => <Avatar.Icon {...props} icon="folder" />}
         right={(props) => (
           <IconButton {...props} icon="more-vert" onPress={() => {
@@ -96,7 +95,6 @@ const todoShape = PropTypes.shape({
   endDate: PropTypes.instanceOf(moment).isRequired,
   title: PropTypes.string,
   content: PropTypes.string,
-  done: PropTypes.bool,
 });
 
 TodoList.propTypes = {
