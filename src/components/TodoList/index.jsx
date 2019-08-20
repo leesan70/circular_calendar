@@ -30,11 +30,18 @@ function TodoItem({ displayItem }) {
     <Card style={styles.todoItem}>
       <Card.Title
         title={displayItem.title}
-        subtitle={() => {
-          const adjStartDate = 
-          displayItem.startDate.format('LT') + " - " + displayItem.endDate.format('LT')
-        }}
-        // left={(props) => <Avatar.Icon {...props} icon="folder" />}
+        subtitle={(() => {
+          let startDateStr;
+          let endDateStr;
+          if (!displayItem.startDate.isSame(displayItem.endDate, 'day')) {
+            startDateStr = displayItem.startDate.format('MM.DD hh:mm');
+            endDateStr = displayItem.endDate.format('MM.DD hh:mm');
+          } else {
+            startDateStr = displayItem.startDate.format('LT');
+            endDateStr = displayItem.endDate.format('LT');
+          }
+          return startDateStr + " - " + endDateStr;
+        })()}
         right={(props) => (
           <IconButton {...props} icon="more-vert" onPress={() => {
             Alert.alert(
