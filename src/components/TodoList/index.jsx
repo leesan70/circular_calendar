@@ -1,7 +1,7 @@
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Alert } from 'react-native';
 import { Card, IconButton, Paragraph } from 'react-native-paper';
 
 function getKey(displayItem) {
@@ -25,6 +25,8 @@ function FreeItem({ displayItem }) {
  );
 }
 
+
+
 function TodoItem({ displayItem }) {
   return (
     <Card style={styles.todoItem}>
@@ -35,7 +37,29 @@ function TodoItem({ displayItem }) {
         }
         // left={(props) => <Avatar.Icon {...props} icon="folder" />}
         right={(props) => (
-          <IconButton {...props} icon="more-vert" onPress={() => {alert('Implement edit/delete for todos!')}} />
+          <IconButton {...props} icon="more-vert" onPress={() => {
+            Alert.alert(
+              'Edit / Delete',
+              '',
+              [
+                {
+                  text: 'Edit',
+                  onPress: () => alert('Edit')
+                },
+                {
+                  text: 'Delete',
+                  onPress: () => alert('Delete'),
+                  
+                },
+                {
+                  text: 'Cancel',
+                  onPress: () => alert('Cancel'),
+                  style: 'cancel',
+                },
+              ],
+              {cancelable: false},
+            );
+          }} />
         )}
       />
       <Card.Content>

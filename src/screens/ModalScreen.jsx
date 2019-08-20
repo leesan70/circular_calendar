@@ -31,6 +31,8 @@ export default class ModalScreen extends Component {
   }
 
   showStartDateTimePicker = () => {
+    const { startDate } = this.state;
+    const timeNow = moment().
     this.setState({ isStartDateTimePickerVisible: true });
   };
 
