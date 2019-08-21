@@ -25,7 +25,7 @@ function FreeItem({ displayItem }) {
  );
 }
 
-function TodoItem({ displayItem }) {
+function TodoItem({ displayItem, directToEdit, deleteTodo }) {
   return (
     <Card style={styles.todoItem}>
       <Card.Title
@@ -50,20 +50,18 @@ function TodoItem({ displayItem }) {
               [
                 {
                   text: 'Edit',
-                  onPress: () => alert('Edit')
+                  onPress: () => directToEdit(displayItem),
                 },
                 {
                   text: 'Delete',
-                  onPress: () => alert('Delete'),
-                  
+                  onPress: () => deleteTodo(displayItem),
                 },
                 {
                   text: 'Cancel',
-                  onPress: () => alert('Cancel'),
                   style: 'cancel',
                 },
               ],
-              {cancelable: false},
+              {cancelable: true},
             );
           }} />
         )}
@@ -86,12 +84,17 @@ export default class TodoList extends Component {
   }
 
   render() {
-    const { displayData, selectedIndex } = this.props;
+    const { displayData, selectedIndex, directToEdit, deleteTodo } = this.props;
     const selectedItem = displayData[selectedIndex];
     const todoList = selectedItem ? [selectedItem] : displayData;
     return todoList.map(displayItem => {
       return isTodoItem(displayItem) ?
-        <TodoItem key={getKey(displayItem)} displayItem={displayItem}/> :
+        <TodoItem
+          key={getKey(displayItem)}
+          displayItem={displayItem}
+          directToEdit={directToEdit}
+          deleteTodo={deleteTodo}
+        /> :
         <FreeItem key={getKey(displayItem)} displayItem={displayItem}/>
     });
   }
