@@ -9,7 +9,7 @@ export default class CalendarScreen extends Component {
       <View style={styles.calendar}>
         <Calendar 
           onDayPress={(day) => {
-            this.props.navigation.navigate('Schedule', {
+            this.props.navigation.navigate('ScheduleMain', {
               dataDate: moment(day.dateString).startOf('day'),
             });
           }}

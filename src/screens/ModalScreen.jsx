@@ -40,10 +40,10 @@ export default class ModalScreen extends Component {
       // Do not attempt editing if nothing has changed.
       if (isSameTodo(existingTodo, newTodo)) return;
       editTodo(existingTodo, newTodo)
-        .then(this.props.navigation.navigate('Schedule', { dataDate }));
+        .then(this.props.navigation.navigate('ScheduleMain', { dataDate }));
     } else {
       addTodo(newTodo)
-        .then(this.props.navigation.navigate('Schedule', { dataDate }));
+        .then(this.props.navigation.navigate('ScheduleMain', { dataDate }));
     }
   }
 

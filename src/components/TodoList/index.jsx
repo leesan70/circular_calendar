@@ -77,14 +77,15 @@ function TodoItem({ displayItem, directToEdit, deleteTodo }) {
 
 export default class TodoList extends Component {
   shouldComponentUpdate(nextProps, nextState) {
-    const { displayData, selectedIndex } = this.props;
-    const { displayData:nextDisplayData, selectedIndex:nextSelectedIndex } = nextProps;
+    const { displayData, selectedIndex, hideFreeItems } = this.props;
+    const { displayData:nextDisplayData, selectedIndex:nextSelectedIndex, hideFreeItems:nextHideFreeItems } = nextProps;
     return selectedIndex !== nextSelectedIndex ||
-      JSON.stringify(displayData) !== JSON.stringify(nextDisplayData);
+      JSON.stringify(displayData) !== JSON.stringify(nextDisplayData) ||
+      hideFreeItems !== nextHideFreeItems;
   }
 
   render() {
-    const { displayData, selectedIndex, directToEdit, deleteTodo } = this.props;
+    const { displayData, selectedIndex, directToEdit, deleteTodo, hideFreeItems } = this.props;
     const selectedItem = displayData[selectedIndex];
     const todoList = selectedItem ? [selectedItem] : displayData;
     return todoList.map(displayItem => {
@@ -95,8 +96,8 @@ export default class TodoList extends Component {
           directToEdit={directToEdit}
           deleteTodo={deleteTodo}
         /> :
-        <FreeItem key={getKey(displayItem)} displayItem={displayItem}/>
-    });
+        !hideFreeItems && <FreeItem key={getKey(displayItem)} displayItem={displayItem}/>
+    }).filter(component => component !== null);
   }
 }
 

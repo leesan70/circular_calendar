@@ -25,6 +25,7 @@ export default class ScheduleScreen extends Component {
       displayDate: moment(),
       is12HrMode: false,
       showAM: true,
+      hideFreeItems: false,
     };
     this.onPieItemPress = this.onPieItemPress.bind(this);
     this.onPieItemLongPress = this.onPieItemLongPress.bind(this);
@@ -42,8 +43,8 @@ export default class ScheduleScreen extends Component {
     this.getData = this.getData.bind(this);
     this.setData = this.setData.bind(this);
     this.onFocus = this.onFocus.bind(this);
-    
-    AsyncStorage.clear();
+
+    this.updateHideFreeItems = this.updateHideFreeItems.bind(this);
   }
 
   async addTodo(todo) {
@@ -151,7 +152,7 @@ export default class ScheduleScreen extends Component {
     }
   }
 
-  onFocus() {
+  async onFocus() {
     const { dataDate } = this.state;
     const propDataDate = this.props.navigation.getParam('dataDate');
     if (!dataDate || propDataDate && !dataDate.isSame(propDataDate, 'day')) {
@@ -163,7 +164,33 @@ export default class ScheduleScreen extends Component {
     }
   }
 
-  componentDidMount() {
+  async updateHideFreeItems() {
+    AsyncStorage.getItem("hideFreeItems").then(
+      hideFreeItems => {
+        this.setState({ hideFreeItems: hideFreeItems === "true" });
+      }
+    );
+  }
+
+  async componentDidMount() {
+    await this.updateHideFreeItems();
+    const parentNavigator = this.props.navigation.dangerouslyGetParent();
+    const defaultGetStateForAction = parentNavigator.router.getStateForAction;
+    parentNavigator.router.getStateForAction = (action, state) => {
+      switch (action.type) {
+        case 'Navigation/OPEN_DRAWER':
+        case 'Navigation/DRAWER_OPENED':
+          break;
+          
+        case 'Navigation/CLOSE_DRAWER':
+        case 'Navigation/DRAWER_CLOSED':
+          // Set hideFreeItems received from AsyncStorage
+          this.updateHideFreeItems().then();
+          break;
+        }
+      return defaultGetStateForAction(action, state);
+    };
+
     this.focusListener = this.props.navigation.addListener('didFocus', this.onFocus);
     this.intervalID = setInterval(
       () => this.tick(),
@@ -187,7 +214,8 @@ export default class ScheduleScreen extends Component {
       rest.data != nextRest.data ||
       rest.selectedIndex !== nextRest.selectedIndex ||
       rest.is12HrMode !== nextRest.is12HrMode ||
-      rest.showAM !== nextRest.showAM;
+      rest.showAM !== nextRest.showAM ||
+      rest.hideFreeItems !== nextRest.hideFreeItems;
   }
 
   tick() {
@@ -282,6 +310,7 @@ export default class ScheduleScreen extends Component {
       showAM,
       dataDate,
       displayDate,
+      hideFreeItems,
     } = this.state;
     const { navigation } = this.props;
     const displayData = this.prepareDisplayData();
@@ -301,7 +330,7 @@ export default class ScheduleScreen extends Component {
             <Header
               leftComponent={{
                 icon: 'menu',
-                onPress: () => alert('Implement Side Drawer!')
+                onPress: () => this.props.navigation.toggleDrawer(),
               }}
               centerComponent={{
                 text: dateString,
@@ -344,6 +373,7 @@ export default class ScheduleScreen extends Component {
                     deleteTodo={this.deleteTodo}
                     directToEdit={this.directToEdit}
                     editTodo={this.editTodo}
+                    hideFreeItems={hideFreeItems}
                   />
                 </View>
               </ScrollView>
